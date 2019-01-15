@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"errors"
 	"regexp"
+
+	"github.com/go-flow/migrator/dialect"
 )
 
 // migrationRegEx defines regular expression for migration files
@@ -11,11 +13,24 @@ import (
 // example file `2018051570142_initial.up.sql`
 var migrationRegEx = regexp.MustCompile(`(\d+)_([^\.]+)(\.[a-z]+)?\.(up|down)\.(sql)`)
 
+// New returns a new "blank" migrator.
+//
+// a blank Migrator should be only used as
+// basis for a new type of migration system
+func New(dialectName string, conn *sql.DB) Migrator {
+	return Migrator{
+		dialect: dialect.New(dialectName, conn),
+		migrations: map[string]Migrations{
+			"up":   Migrations{},
+			"down": Migrations{},
+		},
+	}
+}
+
 // Migrator forms the basis of all migration systems.Migrator
 // it does the actual heavy lifting of running migrations
 type Migrator struct {
-	dialect    string
-	conn       *sql.DB
+	dialect    dialect.Dialect
 	schemaPath string
 	migrations map[string]Migrations
 }
