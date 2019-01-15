@@ -56,3 +56,19 @@ func (c common) CurrentDatabase() (name string) {
 	c.db.QueryRow("SELECT DATABASE()").Scan(&name)
 	return
 }
+
+func (c common) MigrationExists(version string, tableName string) (bool, error) {
+	return false, nil
+}
+
+func (c common) CreateMigrationTable(tableName string) error {
+	return fmt.Errorf("Create migrations table SQL query not implemented for `%s` dialect", c.Name())
+}
+
+func (c common) CountRecords(tableName string) (int, error) {
+	return 0, fmt.Errorf("CountRecords SQL query not implemented for `%s` dialect ", c.Name())
+}
+
+func (c common) RemoveMigration(tableName string, version string) error {
+	return fmt.Errorf("RemoveMigration SQL query not implemented for `%s` dialect ", c.Name())
+}

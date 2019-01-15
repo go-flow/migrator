@@ -7,10 +7,6 @@ import (
 
 // Migration handles data for a given database migration
 type Migration struct {
-	// Path to the migration
-	//
-	// for Example ``./migrations/2018051570142_initial.up.sql`
-	Path string
 
 	//Version of the migration
 	//
@@ -24,27 +20,43 @@ type Migration struct {
 
 	// Direction of the migration
 	//
-	// for ecample `up`
+	// for example `up`
 	Direction string
 
-	// Runner function which executes migration
-	Runner func(Migration, *sql.DB) error
+	// Content of migration
+	//
+	// Content holds migration SQL query
+	Content string
 }
 
 // Run executes the migration.
 //
-// Returns error if runner is not defined,
-// and returns result from Runner execution (error)
+// Returns error if Content is not defined,
+// and returns result from SQL execution (error)
 func (m Migration) Run(conn *sql.DB) error {
-	if m.Runner == nil {
-		return fmt.Errorf("migration runner not defined for %s", m.Path)
+	if m.Content == "" {
+		return fmt.Errorf("migration runner not defined for %s.%s.%s", m.Version, m.Name, m.Direction)
 	}
-	return m.Runner(m, conn)
-}
 
-// Exists checks if migration exists in DB
-func (m Migration) Exists(conn *sql.DB, migrationTableName string) (bool, error) {
-	return false, nil
+	// get DB transaction
+	tx, err := conn.Begin()
+	if err != nil {
+		return err
+	}
+	//execute transaction
+	_, err = tx.Exec(m.Content)
+	if err != nil {
+		// rollback
+		err1 := tx.Rollback()
+		// return rollback error
+		if err1 != nil {
+			return err1
+		}
+		// return tx execution error
+		return err
+	}
+	// return tx commit result - success will return nil
+	return tx.Commit()
 }
 
 // Migrations collection

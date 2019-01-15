@@ -39,6 +39,18 @@ type Dialect interface {
 
 	// CurrentDatabase return current database name
 	CurrentDatabase() string
+
+	// MigrationExists  checks if migration version exists in database table
+	MigrationExists(version string, tableName string) (bool, error)
+
+	// CreateMigrationTable creates migrations table in database
+	CreateMigrationTable(tableName string) error
+
+	// CountRecords retunrs number of rows in provided table
+	CountRecords(tableName string) (int, error)
+
+	// RemoveMigration deletes migration version from database table
+	RemoveMigration(tableName string, version string) error
 }
 
 var dialectsMap = map[string]Dialect{}
