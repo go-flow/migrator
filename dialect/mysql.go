@@ -52,6 +52,12 @@ func (c *mysql) CountRecords(tableName string) (int, error) {
 	return count, err
 }
 
+func (c *mysql) SaveMigration(tableName string, version string, name string) error {
+	q := fmt.Sprintf("INSERT INTO %s (version, name) VALUES (?,?)", tableName)
+	_, err := c.db.Exec(q, version, name)
+	return err
+}
+
 func (c *mysql) RemoveMigration(tableName string, version string) error {
 	q := fmt.Sprintf("delete from %s where version = ?", tableName)
 	_, err := c.db.Exec(q, version)

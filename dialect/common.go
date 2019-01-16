@@ -58,7 +58,7 @@ func (c common) CurrentDatabase() (name string) {
 }
 
 func (c common) MigrationExists(version string, tableName string) (bool, error) {
-	return false, nil
+	return false, fmt.Errorf("MigrationExists SQL query not implemented for `%s` dialect ", c.Name())
 }
 
 func (c common) CreateMigrationTable(tableName string) error {
@@ -67,6 +67,10 @@ func (c common) CreateMigrationTable(tableName string) error {
 
 func (c common) CountRecords(tableName string) (int, error) {
 	return 0, fmt.Errorf("CountRecords SQL query not implemented for `%s` dialect ", c.Name())
+}
+
+func (c common) SaveMigration(tableName string, version string, name string) error {
+	return fmt.Errorf("SaveMigration SQL query not implemented for `%s` dialect ", c.Name())
 }
 
 func (c common) RemoveMigration(tableName string, version string) error {

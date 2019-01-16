@@ -49,6 +49,9 @@ type Dialect interface {
 	// CountRecords retunrs number of rows in provided table
 	CountRecords(tableName string) (int, error)
 
+	// SaveMigration stores migration version and name in database
+	SaveMigration(tableName string, version string, name string) error
+
 	// RemoveMigration deletes migration version from database table
 	RemoveMigration(tableName string, version string) error
 }

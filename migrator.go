@@ -24,14 +24,14 @@ var (
 	MigrationsTableName = "schema_migration"
 )
 
-// New returns a new "blank" migrator.
+// newMigrator returns a new "blank" migrator.
 //
 // a blank Migrator should be only used as
 // basis for a new type of migration system
-func New(dialectName string, conn *sql.DB) Migrator {
+func newMigrator(dialectName string, conn *sql.DB) Migrator {
 	m := Migrator{
 		dialect: dialect.New(dialectName, conn),
-		migrations: map[string]Migrations{
+		Migrations: map[string]Migrations{
 			"up":   Migrations{},
 			"down": Migrations{},
 		},
@@ -49,15 +49,14 @@ func New(dialectName string, conn *sql.DB) Migrator {
 // it does the actual heavy lifting of running migrations
 type Migrator struct {
 	dialect    dialect.Dialect
-	schemaPath string
-	migrations map[string]Migrations
+	Migrations map[string]Migrations
 }
 
 // Up runs pending `up` migrations and applies them to the database
 func (m Migrator) Up() error {
 	return m.exec(func() error {
 
-		migrations := m.migrations["up"]
+		migrations := m.Migrations["up"]
 		sort.Sort(migrations)
 		for _, migration := range migrations {
 			exists, err := m.migrationExists(migration)
@@ -70,6 +69,11 @@ func (m Migrator) Up() error {
 			}
 
 			err = migration.Run(m.dialect.DB())
+			if err != nil {
+				return err
+			}
+
+			err = m.dialect.SaveMigration(MigrationsTableName, migration.Version, migration.Name)
 			if err != nil {
 				return err
 			}
@@ -89,7 +93,7 @@ func (m Migrator) Down(step int) error {
 			return err
 		}
 
-		migrations := m.migrations["down"]
+		migrations := m.Migrations["down"]
 		sort.Sort(sort.Reverse(migrations))
 		//skip all executed migrations
 		if len(migrations) > count {
@@ -132,8 +136,8 @@ func (m Migrator) Down(step int) error {
 func (m Migrator) Status() error {
 	return m.exec(func() error {
 		w := tabwriter.NewWriter(os.Stdout, 0, 0, 3, ' ', tabwriter.TabIndent)
-		fmt.Println(w, "Version\t\tName\t\tStatus")
-		for _, migration := range m.migrations["up"] {
+		fmt.Fprintln(w, "Version\t\tName\t\tStatus")
+		for _, migration := range m.Migrations["up"] {
 			exists, err := m.migrationExists(migration)
 			if err != nil {
 				return err
@@ -176,7 +180,7 @@ func (m Migrator) executedMigrationsCount() (int, error) {
 
 // Exists checks if migration exists in DB
 func (m Migrator) migrationExists(migration Migration) (bool, error) {
-	return false, nil
+	return m.dialect.MigrationExists(migration.Version, MigrationsTableName)
 }
 
 // exec internal helper execution function which prints
