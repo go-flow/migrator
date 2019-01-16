@@ -1,9 +1,12 @@
 package dialect
 
-import "fmt"
+import (
+	"database/sql"
+	"fmt"
+)
 
 type mysql struct {
-	common
+	db *sql.DB
 }
 
 func init() {
@@ -14,16 +17,24 @@ func (mysql) Name() string {
 	return "mysql"
 }
 
-func (mysql) Quote(key string) string {
-	return fmt.Sprintf("`%s`", key)
+func (c *mysql) SetDB(db *sql.DB) {
+	c.db = db
 }
 
-func (mysql) SelectFromDummyTable() string {
-	return "FROM DUAL"
+func (c *mysql) DB() *sql.DB {
+	return c.db
 }
 
-func (mysql) DefaultValueStr() string {
-	return "VALUES()"
+func (c *mysql) CurrentDatabase() (name string) {
+	c.db.QueryRow("SELECT DATABASE()").Scan(&name)
+	return
+}
+
+func (c *mysql) HasTable(tableName string) bool {
+	var count int
+	currentDatabase := c.CurrentDatabase()
+	c.db.QueryRow("SELECT count(*) FROM INFORMATION_SCHEMA.TABLES WHERE table_schema = ? AND table_name = ?", currentDatabase, tableName).Scan(&count)
+	return count > 0
 }
 
 func (c *mysql) MigrationExists(version string, tableName string) (bool, error) {

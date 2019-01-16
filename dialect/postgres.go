@@ -1,9 +1,12 @@
 package dialect
 
-import "fmt"
+import (
+	"database/sql"
+	"fmt"
+)
 
 type postgres struct {
-	common
+	db *sql.DB
 }
 
 func init() {
@@ -15,22 +18,41 @@ func (postgres) Name() string {
 	return "postgres"
 }
 
-func (postgres) BindVar(i int) string {
-	return fmt.Sprintf("$%v", i)
+func (c *postgres) SetDB(db *sql.DB) {
+	c.db = db
 }
 
-func (p postgres) HasTable(tableName string) bool {
+func (c *postgres) DB() *sql.DB {
+	return c.db
+}
+
+func (c *postgres) CurrentDatabase() (name string) {
+	c.db.QueryRow("SELECT CURRENT_DATABASE()").Scan(&name)
+	return
+}
+
+func (c *postgres) HasTable(tableName string) bool {
 	var count int
-	p.db.QueryRow("SELECT count(*) FROM INFORMATION_SCHEMA.tables WHERE table_name = $1 AND table_type = 'BASE TABLE' AND table_schema = CURRENT_SCHEMA()", tableName).Scan(&count)
+	c.db.QueryRow("SELECT count(*) FROM INFORMATION_SCHEMA.tables WHERE table_name = $1 AND table_type = 'BASE TABLE' AND table_schema = CURRENT_SCHEMA()", tableName).Scan(&count)
 	return count > 0
 }
 
-// LastInsertIdReturningSuffix most dbs support LastInsertId, but postgres needs to use `RETURNING`
-func (postgres) LastInsertIDReturningSuffix(tableName, columnName string) string {
-	return fmt.Sprintf("RETURNING %v.%v", tableName, columnName)
+func (c *postgres) MigrationExists(version string, tableName string) (bool, error) {
+	return false, fmt.Errorf("Function `MigrationExists` not implemented for dialect `%s`", c.Name())
 }
 
-func (p postgres) CurrentDatabase() (name string) {
-	p.db.QueryRow("SELECT CURRENT_DATABASE()").Scan(&name)
-	return
+func (c *postgres) CreateMigrationTable(tableName string) error {
+	return fmt.Errorf("Function `CreateMigrationTable` not implemented for dialect `%s`", c.Name())
+}
+
+func (c *postgres) CountRecords(tableName string) (int, error) {
+	return 0, fmt.Errorf("Function `CountRecords` not implemented for dialect `%s`", c.Name())
+}
+
+func (c *postgres) SaveMigration(tableName string, version string, name string) error {
+	return fmt.Errorf("Function `SaveMigration` not implemented for dialect `%s`", c.Name())
+}
+
+func (c *postgres) RemoveMigration(tableName string, version string) error {
+	return fmt.Errorf("Function `RemoveMigration` not implemented for dialect `%s`", c.Name())
 }

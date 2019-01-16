@@ -1,9 +1,12 @@
 package dialect
 
-import "fmt"
+import (
+	"database/sql"
+	"fmt"
+)
 
 type mssql struct {
-	common
+	db *sql.DB
 }
 
 func init() {
@@ -14,19 +17,42 @@ func (mssql) Name() string {
 	return "mssql"
 }
 
-func (mssql) Quote(key string) string {
-	return fmt.Sprintf(`[%s]`, key)
+func (c *mssql) SetDB(db *sql.DB) {
+	c.db = db
 }
 
-func (s mssql) HasTable(tableName string) bool {
+func (c *mssql) DB() *sql.DB {
+	return c.db
+}
+
+func (c *mssql) CurrentDatabase() (name string) {
+	c.db.QueryRow("SELECT DB_NAME() AS [Current Database]").Scan(&name)
+	return
+}
+
+func (c *mssql) HasTable(tableName string) bool {
 	var count int
-	currentDatabase := s.CurrentDatabase()
-	s.db.QueryRow("SELECT count(*) FROM INFORMATION_SCHEMA.tables WHERE table_name = ? AND table_catalog = ?", tableName, currentDatabase).Scan(&count)
+	currentDatabase := c.CurrentDatabase()
+	c.db.QueryRow("SELECT count(*) FROM INFORMATION_SCHEMA.tables WHERE table_name = ? AND table_catalog = ?", tableName, currentDatabase).Scan(&count)
 	return count > 0
 }
 
-// CurrentDatabase return current database name
-func (s mssql) CurrentDatabase() (name string) {
-	s.db.QueryRow("SELECT DB_NAME() AS [Current Database]").Scan(&name)
-	return
+func (c *mssql) MigrationExists(version string, tableName string) (bool, error) {
+	return false, fmt.Errorf("Function `MigrationExists` not implemented for dialect `%s`", c.Name())
+}
+
+func (c *mssql) CreateMigrationTable(tableName string) error {
+	return fmt.Errorf("Function `CreateMigrationTable` not implemented for dialect `%s`", c.Name())
+}
+
+func (c *mssql) CountRecords(tableName string) (int, error) {
+	return 0, fmt.Errorf("Function `CountRecords` not implemented for dialect `%s`", c.Name())
+}
+
+func (c *mssql) SaveMigration(tableName string, version string, name string) error {
+	return fmt.Errorf("Function `SaveMigration` not implemented for dialect `%s`", c.Name())
+}
+
+func (c *mssql) RemoveMigration(tableName string, version string) error {
+	return fmt.Errorf("Function `RemoveMigration` not implemented for dialect `%s`", c.Name())
 }
