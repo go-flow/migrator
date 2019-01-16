@@ -1,12 +1,13 @@
 package dialect
 
 import (
-	"database/sql"
 	"fmt"
+
+	"github.com/go-flow/migrator/db"
 )
 
 type mysql struct {
-	db *sql.DB
+	db db.Store
 }
 
 func init() {
@@ -17,11 +18,11 @@ func (mysql) Name() string {
 	return "mysql"
 }
 
-func (c *mysql) SetDB(db *sql.DB) {
+func (c *mysql) SetDB(db db.Store) {
 	c.db = db
 }
 
-func (c *mysql) DB() *sql.DB {
+func (c *mysql) DB() db.Store {
 	return c.db
 }
 

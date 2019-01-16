@@ -1,13 +1,14 @@
 package migrator
 
 import (
-	"database/sql"
 	"fmt"
 	"os"
 	"regexp"
 	"sort"
 	"text/tabwriter"
 	"time"
+
+	"github.com/go-flow/migrator/db"
 
 	"github.com/go-flow/migrator/dialect"
 )
@@ -28,7 +29,7 @@ var (
 //
 // a blank Migrator should be only used as
 // basis for a new type of migration system
-func newMigrator(dialectName string, conn *sql.DB) Migrator {
+func newMigrator(dialectName string, conn db.Store) Migrator {
 	m := Migrator{
 		dialect: dialect.New(dialectName, conn),
 		Migrations: map[string]Migrations{

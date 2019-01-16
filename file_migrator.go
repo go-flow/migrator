@@ -2,13 +2,14 @@ package migrator
 
 import (
 	"bytes"
-	"database/sql"
 	"errors"
 	"html/template"
 	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+
+	"github.com/go-flow/migrator/db"
 )
 
 // FileMigrator is Migrator implementation for SQL
@@ -19,7 +20,7 @@ type FileMigrator struct {
 }
 
 // NewFileMigrator - creates Migrations for files
-func NewFileMigrator(path string, dialect string, db *sql.DB) FileMigrator {
+func NewFileMigrator(path string, dialect string, db db.Store) FileMigrator {
 	fm := FileMigrator{
 		Migrator: newMigrator(dialect, db),
 		Path:     path,

@@ -1,12 +1,13 @@
 package dialect
 
 import (
-	"database/sql"
 	"fmt"
+
+	"github.com/go-flow/migrator/db"
 )
 
 type postgres struct {
-	db *sql.DB
+	db db.Store
 }
 
 func init() {
@@ -18,11 +19,11 @@ func (postgres) Name() string {
 	return "postgres"
 }
 
-func (c *postgres) SetDB(db *sql.DB) {
+func (c *postgres) SetDB(db db.Store) {
 	c.db = db
 }
 
-func (c *postgres) DB() *sql.DB {
+func (c *postgres) DB() db.Store {
 	return c.db
 }
 

@@ -1,8 +1,9 @@
 package migrator
 
 import (
-	"database/sql"
 	"fmt"
+
+	"github.com/go-flow/migrator/db"
 )
 
 // Migration handles data for a given database migration
@@ -33,7 +34,7 @@ type Migration struct {
 //
 // Returns error if Content is not defined,
 // and returns result from SQL execution (error)
-func (m Migration) Run(conn *sql.DB) error {
+func (m Migration) Run(conn db.Store) error {
 	if m.Content == "" {
 		return fmt.Errorf("migration runner not defined for %s.%s.%s", m.Version, m.Name, m.Direction)
 	}

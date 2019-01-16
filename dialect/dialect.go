@@ -1,9 +1,10 @@
 package dialect
 
 import (
-	"database/sql"
 	"fmt"
 	"reflect"
+
+	"github.com/go-flow/migrator/db"
 )
 
 // Dialect defines set of methods needed
@@ -15,10 +16,10 @@ type Dialect interface {
 	Name() string
 
 	// SetDB set db for dialect
-	SetDB(db *sql.DB)
+	SetDB(db db.Store)
 
 	// DB gets dialect db
-	DB() *sql.DB
+	DB() db.Store
 
 	// HasTable check has table or not
 	HasTable(tableName string) bool
@@ -45,7 +46,7 @@ type Dialect interface {
 var dialectsMap = map[string]Dialect{}
 
 // New creates dialect instance for given dialect name and db connection
-func New(name string, db *sql.DB) Dialect {
+func New(name string, db db.Store) Dialect {
 	if value, ok := dialectsMap[name]; ok {
 		dialect := reflect.New(reflect.TypeOf(value).Elem()).Interface().(Dialect)
 		dialect.SetDB(db)
