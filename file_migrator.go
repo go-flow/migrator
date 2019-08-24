@@ -3,11 +3,11 @@ package migrator
 import (
 	"bytes"
 	"errors"
-	"html/template"
 	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"text/template"
 
 	"github.com/go-flow/migrator/db"
 )
